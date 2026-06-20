@@ -67,20 +67,20 @@ search_frame = tk.Frame(root)
 search_frame.pack(fill="x", padx=10, pady=10)
 
 
-playlist_ids = []
+album_ids = []
 track_ids = []
 
 search_entry = tk.Entry(search_frame)
 search_entry.pack(side="left", fill="x", expand=True)
 
-search_entry.bind("<Return>", lambda event: utility.search_playlists(
-    search_entry, sp, playlist_listbox, playlist_ids))
+search_entry.bind("<Return>", lambda event: utility.search_albums(
+    search_entry, sp, playlist_listbox, album_ids))
 
 search_button = tk.Button(
     search_frame,
     text="Search",
-    command=lambda: utility.search_playlists(
-        search_entry, sp, playlist_listbox, playlist_ids)
+    command=lambda: utility.search_albums(
+        search_entry, sp, playlist_listbox, album_ids)
 )
 
 
@@ -98,7 +98,7 @@ playlist_listbox.pack(
 
 playlist_listbox.bind(
     "<<ListboxSelect>>",
-    lambda event: utility.playlist_selected(event, sp, playlist_ids, track_ids, track_listbox)
+    lambda event: utility.album_selected(event, sp, album_ids, track_ids, track_listbox)
 )
 
 track_listbox = tk.Listbox(root)
@@ -111,7 +111,7 @@ track_listbox.pack(
 
 track_listbox.bind(
     "<<ListboxSelect>>",
-    lambda event: utility.track_selected(event, sp)
+    lambda event: utility.track_selected(event, sp, album_ids=album_ids, track_ids=track_ids)
 )
 
 root.mainloop()

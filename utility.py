@@ -75,53 +75,66 @@ def search(sp, query):
     sp.start_playback(uris=[track_uri])
 
 
-def search_playlists(search_box, sp, listbox, playlist_ids):
+def search_albums(search_box, sp, listbox, album_ids):
     listbox.delete(0, tk.END)
     query = search_box.get()
-    results = sp.search(query, type="playlist")
-    resulting_playlists = results["playlists"]["items"]
+    results = sp.search(query, type="album")
+    # print(results)
+    # return
+    resulting_albums = results["albums"]["items"]
+    # print(resulting_albums)
+    
+    # clear previous search results
+    album_ids.clear()
 
-    for i, playlist in enumerate(resulting_playlists):
-        if playlist is not None:
-            listbox.insert(tk.END, playlist["name"])
-            playlist_ids.append(playlist["id"])
+    for i, album in enumerate(resulting_albums):
+        if album is not None:
+            listbox.insert(
+                tk.END, f'{album["name"]} ---- {album["artists"][0]["name"]}')
+            album_ids.append(album["id"])
 
-
-def playlist_selected(event, sp, playlist_ids, track_ids, track_listbox):
+def album_selected(event, sp, album_ids, track_ids, track_listbox):
     print(
         f"Playlist selected: {event.widget.get(event.widget.curselection())}")
     selection_index = event.widget.curselection()[0]
-    sp.start_playback(
-        context_uri=f"spotify:playlist:{playlist_ids[selection_index]}")
-    
-    tracks = sp.playlist_tracks(playlist_ids[selection_index])["items"]
+    # sp.start_playback(
+    #     context_uri=f"spotify:album:{album_ids[selection_index]}")
+
+    album = sp.album(album_ids[selection_index])
+    track_ids.clear()
     track_listbox.delete(0, tk.END)
-    for track in tracks:
-        track_listbox.insert(tk.END, f"{track['name']} by {track['artists'][0]['name']}")
-        track_ids.append(track["track"]["uri"])
-    
-    print (tracks)
+    for track in album["tracks"]["items"]:
+        track_listbox.insert(
+            tk.END, f"{track['name']} by {track['artists'][0]['name']}")
+        track_ids.append(track["uri"])
 
 
-def track_selected(event, sp):
+def track_selected(event, sp, album_ids, track_ids):
+    # print("hello")
     print(f"Track selected: {event.widget.get(event.widget.curselection())}")
     selection_index = event.widget.curselection()[0]
 
-    playback = sp.current_user_playing_track()
-    
-    # Check if a track is playing and if it belongs to a context
-    if playback and playback.get('context'):
-        context_type = playback['context']['type']
-        
-        # Verify the context is a playlist (not an album or artist)
-        if context_type == 'playlist':
-            playlist_uri = playback['context']['uri']
-            return playlist_uri
-        else:
-            return f"The current context is an {context_type}, not a playlist."
-            
-    return "No active playlist context found (e.g., listening to Liked Songs or radio)."
 
+
+
+
+    print(f"Playing track: {event.widget.get(selection_index)} -- {track_ids[selection_index]}")
+    # sp.start_playback(uris=[track_ids[selection_index]])
+    # playback = sp.current_user_playing_track()
+
+    # Check if a track is playing and if it belongs to a context
+    # if playback and playback.get('context'):
+    #     context_type = playback['context']['type']
+
+    #     # Verify the context is a playlist (not an album or artist)
+    #     if context_type == 'playlist':
+    #         playlist_uri = playback['context']['uri']
+    #         return playlist_uri
+    #     else:
+    #         return f"The current context is an {context_type}, not a playlist."
+
+    # return "No active playlist context found (e.g., listening to Liked Songs or radio)."
 
     # track_uri = event.widget.get(selection_index).split(" - ")[-1]
-    sp.start_playback(context_url=f"spotify:playlist:{playlist_id}", offset={"uri": track_uri})
+    sp.start_playback(context_uri=f"spotify:album:{album_ids[selection_index]}", offset={
+                      "uri": track_ids[selection_index]})
