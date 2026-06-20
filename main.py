@@ -111,7 +111,7 @@ track_listbox.pack(
 
 track_listbox.bind(
     "<<ListboxSelect>>",
-    lambda event: utility.track_selected(event, sp, album_ids=album_ids, track_ids=track_ids)
+    lambda event: utility.track_selected(event, sp, album_ids, track_ids, playlist_listbox)
 )
 
 root.mainloop()

@@ -135,6 +135,30 @@ def track_selected(event, sp, album_ids, track_ids):
 
     # return "No active playlist context found (e.g., listening to Liked Songs or radio)."
 
-    # track_uri = event.widget.get(selection_index).split(" - ")[-1]
-    sp.start_playback(context_uri=f"spotify:album:{album_ids[selection_index]}", offset={
-                      "uri": track_ids[selection_index]})
+def track_selected(event, sp, album_ids, track_ids, album_listbox=None):
+    sel = event.widget.curselection()
+    if not sel:
+        return
+    selection_index = sel[0]
+
+    print(f"Track selected: {event.widget.get(selection_index)}")
+    print(f"Playing track: {event.widget.get(selection_index)} -- {track_ids[selection_index]}")
+
+    # Determine the album context index. Prefer the passed-in album_listbox selection
+    album_index = None
+    if album_listbox:
+        a_sel = album_listbox.curselection()
+        if a_sel:
+            album_index = a_sel[0]
+
+    # If no album index found, fall back to using the track index (best-effort)
+    if album_index is None:
+        album_index = selection_index
+
+    # Try playing within album context; fall back to direct URI play if it fails
+    try:
+        sp.start_playback(context_uri=f"spotify:album:{album_ids[album_index]}", offset={
+            "uri": track_ids[selection_index]
+        })
+    except Exception:
+        sp.start_playback(uris=[track_ids[selection_index]])
