@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
 from dotenv import load_dotenv
@@ -42,7 +43,7 @@ next_button.pack(side="left")
 shuffle_button = tk.Button(
     button_frame,
     text="Shuffle",
-    command=lambda: utility.shuffle_switch(sp)
+    command=lambda: utility.shuffle_switch(sp, shuffle_button)
 )
 shuffle_button.pack(side="left")
 
@@ -74,32 +75,40 @@ search_entry = tk.Entry(search_frame)
 search_entry.pack(side="left", fill="x", expand=True)
 
 search_entry.bind("<Return>", lambda event: utility.search_albums(
-    search_entry, sp, playlist_listbox, album_ids))
+    search_entry, sp, album_listbox, album_ids))
 
 search_button = tk.Button(
     search_frame,
     text="Search",
     command=lambda: utility.search_albums(
-        search_entry, sp, playlist_listbox, album_ids)
+        search_entry, sp, album_listbox, album_ids)
 )
 
 
 search_button.pack(side="left", padx=5)
 
 # Results list
-playlist_listbox = tk.Listbox(root)
-playlist_listbox.pack(
+album_listbox = tk.Listbox(root)
+album_listbox.pack(
     fill="both",
     expand=True,
     padx=10,
     pady=10
 )
 
-
-playlist_listbox.bind(
+selected_album_id = [None]
+album_listbox.bind(
     "<<ListboxSelect>>",
-    lambda event: utility.album_selected(event, sp, album_ids, track_ids, track_listbox)
+    lambda event: utility.album_selected(event, sp, album_ids, track_ids, track_listbox, album_id=selected_album_id)
 )
+
+track_pb = ttk.Progressbar(root)
+track_pb.pack(
+    fill="x",
+    padx="20",
+    expand=True
+)
+
 
 track_listbox = tk.Listbox(root)
 track_listbox.pack(
@@ -111,7 +120,7 @@ track_listbox.pack(
 
 track_listbox.bind(
     "<<ListboxSelect>>",
-    lambda event: utility.track_selected(event, sp, album_ids, track_ids, playlist_listbox)
+    lambda event: utility.track_selected(event, sp, album_id=selected_album_id, track_ids=track_ids)
 )
 
 root.mainloop()
