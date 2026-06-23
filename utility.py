@@ -116,7 +116,8 @@ def album_selected(event, sp, album_ids, track_ids, track_listbox, album_id):
         track_ids.append(track["uri"])
 
 
-def track_selected(event, sp, track_ids, album_id):
+def track_selected(event, sp, track_ids, album_id, track_pb):
+
     selection = event.widget.curselection()
     if not selection:
         return
@@ -128,3 +129,8 @@ def track_selected(event, sp, track_ids, album_id):
     sp.start_playback(context_uri=f"spotify:album:{album_id[0]}", offset={
         "uri": track_ids[selection_index]
     })
+    track_pb["value"] = 0
+    current = sp.current_user_playing_track()
+    song_length = current["item"]["duration_ms"]
+    step = song_length/100
+    track_pb.start(int(step))

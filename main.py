@@ -29,10 +29,12 @@ root.title("Spotify")
 button_frame = tk.Frame(root)
 button_frame.pack()
 
-play_button = tk.Button(button_frame, text="Play", command=lambda: utility.play(sp))
+play_button = tk.Button(button_frame, text="Play",
+                        command=lambda: utility.play(sp))
 play_button.pack(side="left")
 
-pause_button = tk.Button(button_frame, text="Pause", command=lambda: utility.pause(sp))
+pause_button = tk.Button(button_frame, text="Pause",
+                         command=lambda: utility.pause(sp))
 pause_button.pack(side="left")
 
 next_button = tk.Button(
@@ -48,7 +50,7 @@ shuffle_button = tk.Button(
 shuffle_button.pack(side="left")
 
 
-#VOLUME SLIDER
+# VOLUME SLIDER
 volume_slider = tk.Scale(
     root,
     from_=0,
@@ -99,10 +101,11 @@ album_listbox.pack(
 selected_album_id = [None]
 album_listbox.bind(
     "<<ListboxSelect>>",
-    lambda event: utility.album_selected(event, sp, album_ids, track_ids, track_listbox, album_id=selected_album_id)
+    lambda event: utility.album_selected(
+        event, sp, album_ids, track_ids, track_listbox, album_id=selected_album_id)
 )
 
-track_pb = ttk.Progressbar(root)
+track_pb:ttk.Progressbar = ttk.Progressbar(root)
 track_pb.pack(
     fill="x",
     padx="20",
@@ -120,9 +123,8 @@ track_listbox.pack(
 
 track_listbox.bind(
     "<<ListboxSelect>>",
-    lambda event: utility.track_selected(event, sp, album_id=selected_album_id, track_ids=track_ids)
+    lambda event: utility.track_selected(
+        event, sp, album_id=selected_album_id, track_ids=track_ids, track_pb=track_pb)
 )
 
 root.mainloop()
-
-# utility.pause(sp)
