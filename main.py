@@ -105,13 +105,27 @@ album_listbox.bind(
         event, sp, album_ids, track_ids, track_listbox, album_id=selected_album_id)
 )
 
-track_pb:ttk.Progressbar = ttk.Progressbar(root)
+
+progress_frame = tk.Frame(root)
+progress_frame.pack(fill="x", padx=20, pady=5)
+
+elapsed_label = tk.Label(progress_frame, text="0:00", width=5, anchor="e")
+elapsed_label.pack(side="left")
+
+
+track_pb: ttk.Progressbar = ttk.Progressbar(progress_frame, mode="determinate")
 track_pb.pack(
+    side="left",
     fill="x",
-    padx="20",
+    padx="8",
     expand=True
 )
 
+duration_label = tk.Label(progress_frame, text="0:00", width=5, anchor="w")
+duration_label.pack(side="left")
+
+progress_bar = {"elapsed_label": elapsed_label,
+                "track_pb": track_pb, "duration_label": duration_label}
 
 track_listbox = tk.Listbox(root)
 track_listbox.pack(
@@ -124,7 +138,7 @@ track_listbox.pack(
 track_listbox.bind(
     "<<ListboxSelect>>",
     lambda event: utility.track_selected(
-        event, sp, album_id=selected_album_id, track_ids=track_ids, track_pb=track_pb)
+        event, sp, album_id=selected_album_id, track_ids=track_ids, progress_bar=progress_bar)
 )
 
 root.mainloop()
