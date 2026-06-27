@@ -117,7 +117,9 @@ def album_selected(event, sp, album_ids, track_ids, track_listbox, album_id):
 
 
 def track_selected(event, sp, track_ids, album_id, progress_bar):
-
+    if hasattr(progress_bar["track_pb"], "after_id"):
+        progress_bar["track_pb"].after_cancel(
+            progress_bar["track_pb"].after_id)
     selection = event.widget.curselection()
     if not selection:
         return
@@ -129,9 +131,6 @@ def track_selected(event, sp, track_ids, album_id, progress_bar):
     sp.start_playback(context_uri=f"spotify:album:{album_id[0]}", offset={
         "uri": track_ids[selection_index]
     })
-    progress_bar["track_pb"]["value"] = 0
-
-    update_progress(sp, progress_bar)
 
 
 def format_time(ms):
@@ -141,9 +140,11 @@ def format_time(ms):
     return f"{minutes}:{seconds:02d}"
 
 
-def update_progress(sp, progress_bar):
+def update_progress(sp, progress_bar, song_label):
     current = sp.currently_playing()
-
+    song = current["item"]["name"]
+    artist = current["item"]["artists"][0]["name"]
+    song_label.config(text=f"{song} -- {artist}")
     if current is None or current["item"] is None:
         return
 
@@ -156,4 +157,4 @@ def update_progress(sp, progress_bar):
     progress_bar["duration_label"].config(text=format_time(duration))
 
     progress_bar["track_pb"].after(
-        500, lambda: update_progress(sp, progress_bar))
+        500, lambda: update_progress(sp, progress_bar, song_label))

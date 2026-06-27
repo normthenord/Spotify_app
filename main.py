@@ -106,6 +106,9 @@ album_listbox.bind(
 )
 
 
+song_label = tk.Label(root)
+song_label.pack()
+
 progress_frame = tk.Frame(root)
 progress_frame.pack(fill="x", padx=20, pady=5)
 
@@ -140,5 +143,8 @@ track_listbox.bind(
     lambda event: utility.track_selected(
         event, sp, album_id=selected_album_id, track_ids=track_ids, progress_bar=progress_bar)
 )
+
+utility.update_progress(sp, progress_bar, song_label)
+
 
 root.mainloop()
