@@ -44,7 +44,12 @@ def change_volume(sp, volume):
 
 
 def play(sp):
-    sp.start_playback()
+    current = sp.current_playback()
+    playing = current["is_playing"]
+    if playing:
+        sp.pause_playback()
+    else:
+        sp.start_playback()
 
 
 def pause(sp):
@@ -55,10 +60,10 @@ def shuffle_switch(sp, shuffle_button):
     current_state = sp.current_playback()["shuffle_state"]
     if current_state:
         shuffle_button.config(
-            text="Shuffle Off", relief=tk.RAISED, bg="SystemButtonFace", fg="black")
+            relief=tk.RAISED, bg="SystemButtonFace", fg="black")
     else:
         shuffle_button.config(
-            text="Shuffle On", relief=tk.SUNKEN, bg="gray40", fg="white")
+            relief=tk.SUNKEN, bg="gray40", fg="white")
     sp.shuffle(not current_state)
 
 
@@ -140,14 +145,38 @@ def format_time(ms):
     return f"{minutes}:{seconds:02d}"
 
 
-def update_progress(sp, progress_bar, song_label):
-    current = sp.currently_playing()
-    song = current["item"]["name"]
-    artist = current["item"]["artists"][0]["name"]
-    song_label.config(text=f"{song} -- {artist}")
-    if current is None or current["item"] is None:
+def mark_toggle(button, bool):
+    if bool:
+        button.config(relief=tk.SUNKEN, bg="gray40", fg="white")
+    else:
+        button.config(relief=tk.RAISED, bg="SystemButtonFace", fg="black")
+
+
+def update(sp, progress_bar, song_labels, toggles):
+    current = sp.current_playback()
+    if current is None:
+        song_labels.name_and_artist.config(text="")
+        song_labels.album.config(text="")
         return
 
+    update_song(sp, progress_bar, song_labels, current)
+
+    update_toggles(sp, toggles, current)
+
+    progress_bar["track_pb"].after(
+        500, lambda: update(sp, progress_bar, song_labels, toggles))
+
+
+def update_song(sp, progress_bar, song_labels, current):
+
+    # UPDATE SONG INFO
+    song = current["item"]["name"]
+    artist = current["item"]["artists"][0]["name"]
+    song_labels.name_and_artist.config(text=f"{song} -- {artist}")
+    album = current["item"]["album"]["name"]
+    song_labels.album.config(text=f"{album}")
+
+    # UPDATE PROGRESS BAR
     duration = current["item"]["duration_ms"]
     progress = current["progress_ms"]
     progress_bar["track_pb"]["maximum"] = duration
@@ -156,5 +185,10 @@ def update_progress(sp, progress_bar, song_label):
     progress_bar["elapsed_label"].config(text=format_time(progress))
     progress_bar["duration_label"].config(text=format_time(duration))
 
-    progress_bar["track_pb"].after(
-        500, lambda: update_progress(sp, progress_bar, song_label))
+
+def update_toggles(sp, toggles, current):
+    currently_playing = current["is_playing"]
+    mark_toggle(toggles.play, currently_playing)
+
+    shuffle_state = current["shuffle_state"]
+    mark_toggle(toggles.shuffle, shuffle_state)

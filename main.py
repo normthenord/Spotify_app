@@ -30,7 +30,7 @@ button_frame = tk.Frame(root)
 button_frame.pack()
 
 play_button = tk.Button(button_frame, text="Play",
-                        command=lambda: utility.play(sp))
+                        command=lambda: utility.play( sp))
 play_button.pack(side="left")
 
 pause_button = tk.Button(button_frame, text="Pause",
@@ -49,6 +49,13 @@ shuffle_button = tk.Button(
 )
 shuffle_button.pack(side="left")
 
+class Toggles:
+    play = play_button 
+    shuffle = shuffle_button
+
+
+toggles = Toggles()
+
 
 # VOLUME SLIDER
 volume_slider = tk.Scale(
@@ -64,6 +71,10 @@ volume_slider.set(original_volume)
 volume_slider.pack(fill="x", padx=10)
 volume_slider.bind("<ButtonRelease-1>",
                    lambda event: utility.volume_released(event, volume_slider, sp))
+
+class Sliders:
+    volume_slider = original_volume
+
 
 # Search area
 search_frame = tk.Frame(root)
@@ -109,6 +120,9 @@ album_listbox.bind(
 song_label = tk.Label(root)
 song_label.pack()
 
+album_label = tk.Label(root)
+album_label.pack()
+
 progress_frame = tk.Frame(root)
 progress_frame.pack(fill="x", padx=20, pady=5)
 
@@ -144,7 +158,21 @@ track_listbox.bind(
         event, sp, album_id=selected_album_id, track_ids=track_ids, progress_bar=progress_bar)
 )
 
-utility.update_progress(sp, progress_bar, song_label)
+
+class Song_Labels:
+    name_and_artist = None,
+    album = None
+
+song_labels = Song_Labels()
+song_labels.name_and_artist = song_label
+song_labels.album = album_label
+
+
+utility.update(sp, progress_bar, song_labels, toggles)
 
 
 root.mainloop()
+
+
+
+
