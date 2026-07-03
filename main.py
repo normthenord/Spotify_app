@@ -1,3 +1,5 @@
+import time
+
 import tkinter as tk
 from tkinter import ttk
 from spotipy.oauth2 import SpotifyOAuth
@@ -5,7 +7,7 @@ from spotipy import Spotify
 from dotenv import load_dotenv
 import os
 import utility
-import time
+import threading
 playlist_id = "7KHdtsSrAhhQUQIVHTgq4t"
 
 load_dotenv()
@@ -30,7 +32,7 @@ button_frame = tk.Frame(root)
 button_frame.pack()
 
 play_button = tk.Button(button_frame, text="Play",
-                        command=lambda: utility.play( sp))
+                        command=lambda: utility.play(sp))
 play_button.pack(side="left")
 
 pause_button = tk.Button(button_frame, text="Pause",
@@ -49,8 +51,9 @@ shuffle_button = tk.Button(
 )
 shuffle_button.pack(side="left")
 
+
 class Toggles:
-    play = play_button 
+    play = play_button
     shuffle = shuffle_button
 
 
@@ -71,6 +74,7 @@ volume_slider.set(original_volume)
 volume_slider.pack(fill="x", padx=10)
 volume_slider.bind("<ButtonRelease-1>",
                    lambda event: utility.volume_released(event, volume_slider, sp))
+
 
 class Sliders:
     volume_slider = original_volume
@@ -117,11 +121,25 @@ album_listbox.bind(
 )
 
 
-song_label = tk.Label(root)
-song_label.pack()
 
-album_label = tk.Label(root)
-album_label.pack()
+######SONG INFO AND ALBUM ART
+
+song_info_frame = tk.Frame(root)
+song_info_frame.pack(fill="x", pady=0, padx=20)
+
+text_frame = tk.Frame(song_info_frame)
+text_frame.pack(side="left", anchor="n")
+
+song_label = tk.Label(text_frame, text="Song Title")
+song_label.pack(anchor="center")
+
+album_label = tk.Label(text_frame, text="Album Name")
+album_label.pack(anchor="center")
+
+album_art = tk.Label(song_info_frame, image=None)
+
+album_art.pack(side="right", padx=20, pady=0, anchor="center")
+
 
 progress_frame = tk.Frame(root)
 progress_frame.pack(fill="x", padx=20, pady=5)
@@ -161,18 +179,24 @@ track_listbox.bind(
 
 class Song_Labels:
     name_and_artist = None,
-    album = None
+    album = None,
+    album_art = None
+
 
 song_labels = Song_Labels()
 song_labels.name_and_artist = song_label
 song_labels.album = album_label
+song_labels.album_art = album_art
 
 
-utility.update(sp, progress_bar, song_labels, toggles)
+def update_playback():
+    while True:
+        utility.update(sp, progress_bar, song_labels, toggles)
+        time.sleep(0.5)
+
+
+threading.Thread(target=update_playback, daemon=True).start()
+
 
 
 root.mainloop()
-
-
-
-

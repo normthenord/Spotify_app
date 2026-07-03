@@ -1,4 +1,7 @@
 import tkinter as tk
+import requests
+from io import BytesIO
+from PIL import Image, ImageTk
 
 
 def next_song(sp):
@@ -44,8 +47,8 @@ def change_volume(sp, volume):
 
 
 def play(sp):
-    current = sp.current_playback()
-    playing = current["is_playing"]
+    state = sp.current_playback()
+    playing = state["is_playing"]
     if playing:
         sp.pause_playback()
     else:
@@ -153,32 +156,49 @@ def mark_toggle(button, bool):
 
 
 def update(sp, progress_bar, song_labels, toggles):
-    current = sp.current_playback()
-    if current is None:
+    state = get_playback_state(sp)
+    if state is None:
         song_labels.name_and_artist.config(text="")
         song_labels.album.config(text="")
         return
 
-    update_song(sp, progress_bar, song_labels, current)
-
-    update_toggles(sp, toggles, current)
-
-    progress_bar["track_pb"].after(
-        500, lambda: update(sp, progress_bar, song_labels, toggles))
+    update_song(progress_bar, song_labels, state)
+    update_toggles(toggles, state)
+    update_album_art(song_labels.album_art, state["album_art"])
 
 
-def update_song(sp, progress_bar, song_labels, current):
+def get_playback_state(sp):
+    playback = sp.current_playback()
+
+    if playback is None or playback["item"] is None:
+        return None
+
+    return {
+        "is_playing": playback["is_playing"],
+        "track_name": playback["item"]["name"],
+        "artist": playback["item"]["artists"][0]["name"],
+        "album": playback["item"]["album"]["name"],
+        "progress": playback["progress_ms"],
+        "duration": playback["item"]["duration_ms"],
+        "shuffle": playback["shuffle_state"],
+        "repeat": playback["repeat_state"],
+        "volume": playback["device"]["volume_percent"],
+        "album_art": playback["item"]["album"]["images"][0]["url"] if playback["item"]["album"]["images"] else None
+    }
+
+
+def update_song(progress_bar, song_labels, state):
 
     # UPDATE SONG INFO
-    song = current["item"]["name"]
-    artist = current["item"]["artists"][0]["name"]
-    song_labels.name_and_artist.config(text=f"{song} -- {artist}")
-    album = current["item"]["album"]["name"]
+    song_name = state["track_name"]
+    artist = state["artist"]
+    song_labels.name_and_artist.config(text=f"{song_name} -- {artist}")
+    album = state["album"]
     song_labels.album.config(text=f"{album}")
 
     # UPDATE PROGRESS BAR
-    duration = current["item"]["duration_ms"]
-    progress = current["progress_ms"]
+    duration = state["duration"]
+    progress = state["progress"]
     progress_bar["track_pb"]["maximum"] = duration
     progress_bar["track_pb"]["value"] = progress
 
@@ -186,9 +206,31 @@ def update_song(sp, progress_bar, song_labels, current):
     progress_bar["duration_label"].config(text=format_time(duration))
 
 
-def update_toggles(sp, toggles, current):
-    currently_playing = current["is_playing"]
+def update_toggles(toggles, state):
+    currently_playing = state["is_playing"]
     mark_toggle(toggles.play, currently_playing)
 
-    shuffle_state = current["shuffle_state"]
+    shuffle_state = state["shuffle"]
     mark_toggle(toggles.shuffle, shuffle_state)
+
+
+global_album_url = None
+global_album_image = None
+
+
+def update_album_art(album_art_label, album_art_url):
+    global global_album_url
+    if global_album_url == album_art_url:
+        return
+    global_album_url = album_art_url
+    print(f"Updating album art with URL: {album_art_url}")
+    response = requests.get(album_art_url)
+
+    image = Image.open(BytesIO(response.content))
+    image = image.resize((75, 75), Image.Resampling.LANCZOS)
+
+    photo = ImageTk.PhotoImage(image)
+
+    album_art_label.config(image=photo)
+    global global_album_image
+    global_album_image = photo  # Keep a reference to avoid garbage collection
