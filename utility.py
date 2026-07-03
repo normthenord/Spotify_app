@@ -227,7 +227,7 @@ def update_album_art(album_art_label, album_art_url):
     response = requests.get(album_art_url)
 
     image = Image.open(BytesIO(response.content))
-    image = image.resize((75, 75), Image.Resampling.LANCZOS)
+    image = image.resize((100, 100), Image.Resampling.LANCZOS)
 
     photo = ImageTk.PhotoImage(image)
 

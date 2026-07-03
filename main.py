@@ -121,31 +121,31 @@ album_listbox.bind(
 )
 
 
-
-######SONG INFO AND ALBUM ART
+# SONG INFO AND ALBUM ART
 
 song_info_frame = tk.Frame(root)
-song_info_frame.pack(fill="x", pady=0, padx=20)
+song_info_frame.pack(fill="x", pady=5, padx=20)
 
-text_frame = tk.Frame(song_info_frame)
-text_frame.pack(side="left", anchor="n")
 
-song_label = tk.Label(text_frame, text="Song Title")
+# LEFT SIDE
+left_frame = tk.Frame(song_info_frame)
+left_frame.pack(side="left", fill="both")
+
+song_label = tk.Label(left_frame, text="Song Title")
 song_label.pack(anchor="center")
 
-album_label = tk.Label(text_frame, text="Album Name")
+album_label = tk.Label(left_frame, text="Album Name")
 album_label.pack(anchor="center")
 
-album_art = tk.Label(song_info_frame, image=None)
 
-album_art.pack(side="right", padx=20, pady=0, anchor="center")
-
-
-progress_frame = tk.Frame(root)
-progress_frame.pack(fill="x", padx=20, pady=5)
+progress_frame = tk.Frame(left_frame)
+progress_frame.pack(fill="x",pady=5)
 
 elapsed_label = tk.Label(progress_frame, text="0:00", width=5, anchor="e")
 elapsed_label.pack(side="left")
+album_art = tk.Label(song_info_frame, image=None)
+
+album_art.pack(side="right", padx=20, pady=0, anchor="center")
 
 
 track_pb: ttk.Progressbar = ttk.Progressbar(progress_frame, mode="determinate")
@@ -196,7 +196,6 @@ def update_playback():
 
 
 threading.Thread(target=update_playback, daemon=True).start()
-
 
 
 root.mainloop()
