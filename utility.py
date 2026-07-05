@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import tkinter as tk
 import requests
 from io import BytesIO
@@ -167,38 +168,51 @@ def update(sp, progress_bar, song_labels, toggles):
     update_album_art(song_labels.album_art, state["album_art"])
 
 
+@dataclass
+class State:
+    is_playing: bool
+    track_name: str
+    artist: str
+    album: str 
+    progress: int 
+    duration: int 
+    shuffle: bool 
+    repeat: bool 
+    volume: int 
+    album_art: str
+
 def get_playback_state(sp):
     playback = sp.current_playback()
 
     if playback is None or playback["item"] is None:
         return None
 
-    return {
-        "is_playing": playback["is_playing"],
-        "track_name": playback["item"]["name"],
-        "artist": playback["item"]["artists"][0]["name"],
-        "album": playback["item"]["album"]["name"],
-        "progress": playback["progress_ms"],
-        "duration": playback["item"]["duration_ms"],
-        "shuffle": playback["shuffle_state"],
-        "repeat": playback["repeat_state"],
-        "volume": playback["device"]["volume_percent"],
-        "album_art": playback["item"]["album"]["images"][0]["url"] if playback["item"]["album"]["images"] else None
-    }
+    return State(
+        is_playing= playback["is_playing"],
+        track_name= playback["item"]["name"],
+        artist= playback["item"]["artists"][0]["name"],
+        album= playback["item"]["album"]["name"],
+        progress= playback["progress_ms"],
+        duration= playback["item"]["duration_ms"],
+        shuffle= playback["shuffle_state"],
+        repeat= playback["repeat_state"],
+        volume= playback["device"]["volume_percent"],
+        album_art =playback["item"]["album"]["images"][0]["url"] if playback["item"]["album"]["images"] else None
+    ) 
 
 
 def update_song(progress_bar, song_labels, state):
 
     # UPDATE SONG INFO
-    song_name = state["track_name"]
-    artist = state["artist"]
+    song_name = state.track_name
+    artist = state.artist
     song_labels.name_and_artist.config(text=f"{song_name} -- {artist}")
-    album = state["album"]
+    album = state.album
     song_labels.album.config(text=f"{album}")
 
     # UPDATE PROGRESS BAR
-    duration = state["duration"]
-    progress = state["progress"]
+    duration = state.duration
+    progress = state.progress
     progress_bar["track_pb"]["maximum"] = duration
     progress_bar["track_pb"]["value"] = progress
 
@@ -207,7 +221,7 @@ def update_song(progress_bar, song_labels, state):
 
 
 def update_toggles(toggles, state):
-    currently_playing = state["is_playing"]
+    currently_playing = state.is_playing
     mark_toggle(toggles.play, currently_playing)
 
     shuffle_state = state["shuffle"]

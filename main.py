@@ -1,4 +1,5 @@
 import time
+from dataclasses import dataclass
 
 import tkinter as tk
 from tkinter import ttk
@@ -176,11 +177,12 @@ track_listbox.bind(
         event, sp, album_id=selected_album_id, track_ids=track_ids, progress_bar=progress_bar)
 )
 
-
+@dataclass
 class Song_Labels:
-    name_and_artist = None,
-    album = None,
-    album_art = None
+    name_and_artist: str = None,
+    album: str = None,
+    album_art: str = None
+
 
 
 song_labels = Song_Labels()
