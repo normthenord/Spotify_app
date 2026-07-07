@@ -126,9 +126,9 @@ def album_selected(event, sp, album_ids, track_ids, track_listbox, album_id):
 
 
 def track_selected(event, sp, track_ids, album_id, progress_bar):
-    if hasattr(progress_bar["track_pb"], "after_id"):
-        progress_bar["track_pb"].after_cancel(
-            progress_bar["track_pb"].after_id)
+    if hasattr(progress_bar.track_pb, "after_id"):
+        progress_bar.track_pb.after_cancel(
+            progress_bar.track_pb.after_id)
     selection = event.widget.curselection()
     if not selection:
         return
@@ -165,7 +165,7 @@ def update(sp, progress_bar, song_labels, toggles):
 
     update_song(progress_bar, song_labels, state)
     update_toggles(toggles, state)
-    update_album_art(song_labels.album_art, state["album_art"])
+    update_album_art(song_labels.album_art, state.album_art)
 
 
 @dataclass
@@ -213,18 +213,18 @@ def update_song(progress_bar, song_labels, state):
     # UPDATE PROGRESS BAR
     duration = state.duration
     progress = state.progress
-    progress_bar["track_pb"]["maximum"] = duration
-    progress_bar["track_pb"]["value"] = progress
+    progress_bar.track_pb["maximum"] = duration
+    progress_bar.track_pb["value"] = progress
 
-    progress_bar["elapsed_label"].config(text=format_time(progress))
-    progress_bar["duration_label"].config(text=format_time(duration))
+    progress_bar.elapsed_label.config(text=format_time(progress))
+    progress_bar.duration_label.config(text=format_time(duration))
 
 
 def update_toggles(toggles, state):
     currently_playing = state.is_playing
     mark_toggle(toggles.play, currently_playing)
 
-    shuffle_state = state["shuffle"]
+    shuffle_state = state.shuffle
     mark_toggle(toggles.shuffle, shuffle_state)
 
 

@@ -18,6 +18,9 @@ CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 
+POLLING_INTERVAL = 0.5  # seconds
+
+
 sp = Spotify(
     auth_manager=SpotifyOAuth(
         client_id=CLIENT_ID,
@@ -140,7 +143,7 @@ album_label.pack(anchor="center")
 
 
 progress_frame = tk.Frame(left_frame)
-progress_frame.pack(fill="x",pady=5)
+progress_frame.pack(fill="x", pady=5)
 
 elapsed_label = tk.Label(progress_frame, text="0:00", width=5, anchor="e")
 elapsed_label.pack(side="left")
@@ -151,17 +154,25 @@ album_art.pack(side="right", padx=20, pady=0, anchor="center")
 
 track_pb: ttk.Progressbar = ttk.Progressbar(progress_frame, mode="determinate")
 track_pb.pack(
-    side="left",
+    side=tk.LEFT,
     fill="x",
-    padx="8",
+    padx="5",
     expand=True
 )
 
 duration_label = tk.Label(progress_frame, text="0:00", width=5, anchor="w")
 duration_label.pack(side="left")
 
-progress_bar = {"elapsed_label": elapsed_label,
-                "track_pb": track_pb, "duration_label": duration_label}
+
+@dataclass
+class Progress_Bar:
+    elapsed_label: str
+    track_pb: ttk.Progressbar
+    duration_label: str
+
+
+progress_bar = Progress_Bar(
+    elapsed_label=elapsed_label, track_pb=track_pb, duration_label=duration_label)
 
 track_listbox = tk.Listbox(root)
 track_listbox.pack(
@@ -177,24 +188,22 @@ track_listbox.bind(
         event, sp, album_id=selected_album_id, track_ids=track_ids, progress_bar=progress_bar)
 )
 
+
 @dataclass
 class Song_Labels:
-    name_and_artist: str = None,
-    album: str = None,
-    album_art: str = None
+    name_and_artist: str
+    album: str
+    album_art: str
 
 
-
-song_labels = Song_Labels()
-song_labels.name_and_artist = song_label
-song_labels.album = album_label
-song_labels.album_art = album_art
+song_labels = Song_Labels(name_and_artist=song_label,
+                          album=album_label, album_art=album_art)
 
 
 def update_playback():
     while True:
         utility.update(sp, progress_bar, song_labels, toggles)
-        time.sleep(0.5)
+        time.sleep(POLLING_INTERVAL)
 
 
 threading.Thread(target=update_playback, daemon=True).start()
