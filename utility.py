@@ -49,7 +49,11 @@ def change_volume(sp, volume):
 
 def play(sp):
     state = sp.current_playback()
-    playing = state["is_playing"]
+    if not state or state.get("item") is None:
+        # Nothing currently playing — start playback
+        sp.start_playback()
+        return
+    playing = state.get("is_playing", False)
     if playing:
         sp.pause_playback()
     else:
@@ -61,13 +65,12 @@ def pause(sp):
 
 
 def shuffle_switch(sp, shuffle_button):
-    current_state = sp.current_playback()["shuffle_state"]
+    playback = sp.current_playback() or {}
+    current_state = playback.get("shuffle_state", False)
     if current_state:
-        shuffle_button.config(
-            relief=tk.RAISED, bg="SystemButtonFace", fg="black")
+        shuffle_button.config(relief=tk.RAISED, bg="SystemButtonFace", fg="black")
     else:
-        shuffle_button.config(
-            relief=tk.SUNKEN, bg="gray40", fg="white")
+        shuffle_button.config(relief=tk.SUNKEN, bg="gray40", fg="white")
     sp.shuffle(not current_state)
 
 
@@ -149,8 +152,8 @@ def format_time(ms):
     return f"{minutes}:{seconds:02d}"
 
 
-def mark_toggle(button, bool):
-    if bool:
+def mark_toggle(button, state_bool):
+    if state_bool:
         button.config(relief=tk.SUNKEN, bg="gray40", fg="white")
     else:
         button.config(relief=tk.RAISED, bg="SystemButtonFace", fg="black")
@@ -234,17 +237,25 @@ global_album_image = None
 
 def update_album_art(album_art_label, album_art_url):
     global global_album_url
+    if not album_art_url:
+        return
     if global_album_url == album_art_url:
         return
     global_album_url = album_art_url
     print(f"Updating album art with URL: {album_art_url}")
-    response = requests.get(album_art_url)
+    try:
+        response = requests.get(album_art_url, timeout=5)
+        response.raise_for_status()
+    except Exception as e:
+        print(f"Failed fetching album art: {e}")
+        return
 
-    image = Image.open(BytesIO(response.content))
-    image = image.resize((100, 100), Image.Resampling.LANCZOS)
-
-    photo = ImageTk.PhotoImage(image)
-
-    album_art_label.config(image=photo)
-    global global_album_image
-    global_album_image = photo  # Keep a reference to avoid garbage collection
+    try:
+        image = Image.open(BytesIO(response.content))
+        image = image.resize((100, 100), Image.Resampling.LANCZOS)
+        photo = ImageTk.PhotoImage(image)
+        album_art_label.config(image=photo)
+        global global_album_image
+        global_album_image = photo  # Keep a reference to avoid garbage collection
+    except Exception as e:
+        print(f"Failed processing album art: {e}")

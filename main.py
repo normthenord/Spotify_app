@@ -73,7 +73,13 @@ volume_slider = tk.Scale(
     length=300,
     label="Volume"
 )
-original_volume = sp.current_playback()["device"]["volume_percent"]
+
+playback = sp.current_playback()
+if playback and playback.get("device"):
+    original_volume = playback["device"].get("volume_percent", 50)
+else:
+    original_volume = 50
+
 volume_slider.set(original_volume)
 volume_slider.pack(fill="x", padx=10)
 volume_slider.bind("<ButtonRelease-1>",
